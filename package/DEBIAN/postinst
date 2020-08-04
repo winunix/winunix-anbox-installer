@@ -1,0 +1,24 @@
+#!/bin/bash
+
+sudo modprobe ashmem_linux
+sudo modprobe binder_linux
+
+if [ "$(lsmod | grep ashmem_linux | wc -l)" == "0" ]; then
+    echo "not found ashmem_linux"
+    exit
+fi
+
+if [ "$(lsmod | grep binder_linux | wc -l)" == "0" ]; then
+    echo "not found binder_linux"
+    exit
+fi
+
+if [ ! -c /dev/ashmem ]; then
+    echo "not found ashmem device"
+    exit
+fi
+
+sudo snap install --devmode --edge anbox
+sudo snap set anbox rootfs-overlay.enable=true
+sudo snap stop anbox.container-manager
+sudo snap start anbox.container-manager

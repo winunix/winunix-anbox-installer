@@ -1,0 +1,10 @@
+Package: winunix-anbox-installer
+Version: 0.0.1
+Installed-Size: 
+Maintainer: ailtonbsj <ailton.ifce@gmail.com>
+Section: utils
+Architecture: all
+Depends: dkms, linux-headers-generic, aapt, adb
+Priority: optional
+Description: Anbox Installer maintained by WinuniX.
+ This install Anbox using snap.
