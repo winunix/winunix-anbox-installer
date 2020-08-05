@@ -4,7 +4,7 @@ Installed-Size:
 Maintainer: ailtonbsj <ailton.ifce@gmail.com>
 Section: utils
 Architecture: all
-Depends: dkms, linux-headers-generic, aapt, adb
+Depends: dkms, linux-headers-generic, aapt, adb, wmctrl
 Priority: optional
 Description: Anbox Installer maintained by WinuniX.
  This install Anbox using snap.

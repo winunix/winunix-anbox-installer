@@ -1,0 +1,161 @@
+#!/bin/bash
+
+function removeQuotation {
+    if [ "$#" == "0" ]; then
+        STR=$(cat /dev/stdin)
+    else
+        STR=$1
+    fi
+    echo $STR | cut -d"'" -f2
+}
+
+function package {
+    aapt dump badging "$1" | grep 'package:' |\
+    cut -d':' -f2
+}
+
+function packageName {
+    package "$1" | awk '{split($0,a,"name="); print a[2]}' |\
+    cut -d' ' -f1 | removeQuotation
+}
+
+function packageVersionName {
+    package "$1" | awk '{split($0,a,"versionName"); print a[2]}' |\
+    cut -d' ' -f1 | removeQuotation
+}
+
+function applicationLabel {
+    aapt dump badging "$1" | grep "application-label:" |\
+    cut -d':' -f2 | removeQuotation
+}
+
+function applicationLabelBr {
+    aapt dump badging "$1" | grep "application-label-pt-BR:" |\
+    cut -d':' -f2 | removeQuotation
+}
+
+function applicationIcon160 {
+    aapt dump badging "$1" | grep "application-icon-160:" |\
+    cut -d':' -f2 | removeQuotation
+}
+
+function launchableActivity {
+    aapt dump badging "$1" | grep "launchable-activity:" |\
+    cut -d':' -f2
+}
+
+function launchableActivityName {
+    launchableActivity "$1" | awk '{split($0,a,"name="); print a[2]}' |\
+    cut -d' ' -f1 | removeQuotation
+}
+
+function application {
+    aapt dump badging "$1" | grep "application:"
+}
+
+function applicationIcon {
+    application "$1" | awk '{split($0,a,"icon="); print a[2]}' |\
+    removeQuotation
+}
+
+packageName=$(packageName "$1")
+applicationIcon=$(applicationIcon "$1")
+launchableActivityName=$(launchableActivityName "$1")
+applicationLabelBr=$(applicationLabelBr "$1")
+applicationLabel=$(applicationLabel "$1")
+packageVersionName=$(packageVersionName "$1")
+
+if [ ! -n "$applicationLabelBr" ]; then
+    applicationLabelBr="$applicationLabel"
+fi
+
+applicationIcon160  "$1"
+
+
+cp "$1" "/tmp/$packageName.zip"
+unzip -oq /tmp/$packageName.zip -d /tmp/$packageName
+
+# Generate Icon
+iconFilename=$(basename -- "$applicationIcon")
+iconExtension="${iconFilename##*.}"
+iconName="${iconFilename%.*}"
+
+if [ "$iconExtension" == "png" ]; then
+    convert /tmp/$packageName/$applicationIcon -resize 128x128 $packageName.png
+else
+    find /tmp/$packageName -iname "$iconName.png" > /tmp/icons_of_apk
+    while read line; do
+        size=$(identify -format "%w" $line)
+        if [ "$size" -gt "128" ]; then
+            convert $line -resize 128x128 $packageName.png
+            break
+        fi
+    done < /tmp/icons_of_apk
+fi
+
+# Generate binary
+applicationLabelBrASCII=$(echo $applicationLabelBr | sed 's/[âêîôûãẽĩõũáéíóúāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ]//g')
+
+cat << EOF > $packageName
+#!/bin/bash
+
+anbox launch --package=$packageName --component=$launchableActivityName
+sleep 2
+widApp=\$(wmctrl -l | grep "$applicationLabel\$" | cut -d" " -f1)
+widAppBr=\$(wmctrl -l | grep "$applicationLabelBrASCII\$" | cut -d" " -f1)
+wmctrl -i -r \$widApp -b toggle,maximized_vert
+wmctrl -i -r \$widApp -b toggle,maximized_horz
+wmctrl -i -r \$widAppBr -b toggle,maximized_vert
+wmctrl -i -r \$widAppBr -b toggle,maximized_horz
+EOF
+
+chmod +x $packageName
+mkdir -p package/usr/share/$packageName/
+mkdir -p package/DEBIAN/
+mv $packageName.png package/usr/share/$packageName/
+mv $packageName package/usr/share/$packageName/
+cp "$1" package/usr/share/$packageName/$packageName.apk
+
+cat << EOF > package/DEBIAN/postinst
+#!/bin/bash
+/snap/bin/anbox.appmgr &
+adb install /usr/share/$packageName/$packageName.apk
+EOF
+
+cat << EOF > package/DEBIAN/prerm
+#!/bin/bash
+/snap/bin/anbox.appmgr &
+adb uninstall $packageName
+EOF
+
+chmod +x package/DEBIAN/postinst
+chmod +x package/DEBIAN/prerm
+
+if [ ! -f config.data ]; then
+
+cat << EOF > config.data
+GithubId="anbox"
+Email="crash.eddie123@gmail.com"
+AppDomain="anbox"
+AppName="$packageName"
+AppNameEn="$applicationLabel"
+AppNameBr="$applicationLabelBr"
+Comment="$applicationLabel"
+CommentBr="$applicationLabelBr"
+Description="This app run  only with Anbox"
+DescriptionBr="Essa aplicacao roda somente com emulador Anbox"
+Homepage=""
+Bugtracker=""
+Help=""
+Donation=""
+Categories="Education;"
+License="GPL-2.0+"
+Caption="Screenshot of app"
+CaptionBr="Tela do App"
+ImageUrl=""
+Project="anbox"
+Version="$packageVersionName"
+Depends="winunix-anbox-installer"
+EOF
+
+fi

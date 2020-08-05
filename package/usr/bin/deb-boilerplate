@@ -1,0 +1,102 @@
+#!/bin/bash
+
+source config.data
+cd package
+
+# Project Folder
+mkdir -p usr/share/$AppName
+
+mkdir DEBIAN
+mkdir -p usr/bin/
+mkdir -p usr/share/applications/
+mkdir -p usr/share/metainfo/
+mkdir -p usr/share/icons/hicolor/128x128/apps/
+mkdir -p usr/share/doc/$AppName
+# mkdir -p usr/share/pixmaps/
+
+ln -s /usr/share/$AppName/$AppName usr/bin/$AppName
+ln -s /usr/share/$AppName/$AppName.png usr/share/icons/hicolor/128x128/apps/$AppName.png
+ln -s /usr/share/$AppName/LICENSE usr/share/doc/$AppName/copyright
+
+VersionDate=$(date +'%Y-%m-%d')
+
+cat << EOF > usr/share/applications/$AppDomain.$AppName.desktop
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name=${AppNameEn}
+Name[pt_BR]=${AppNameBr}
+Comment=${Comment}
+Comment[pt_BR]=${CommentBr}
+Exec=${AppName} %u
+Icon=${AppName}
+Categories=${Categories}
+
+EOF
+
+cat << EOF > usr/share/metainfo/$AppDomain.$AppName.appdata.xml
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop">
+  <id>${AppDomain}.${AppName}.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>${License}</project_license>
+  <name>${AppNameEn}</name>
+  <name xml:lang="pt_BR">${AppNameBr}</name>
+  <summary>${Comment}</summary>
+  <summary xml:lang="pt_BR">${CommentBr}</summary>
+  <description>
+    <p>${Description}</p>
+    <p xml:lang="pt_BR">${DescriptionBr}</p>
+  </description>
+  <url type="homepage">${Homepage}</url>
+  <url type="bugtracker">${Bugtracker}</url>
+  <url type="help">${Help}</url>
+  <url type="donation">${Donation}</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>${Caption}</caption>
+      <caption xml:lang="pt_BR">${CaptionBr}</caption>
+      <image>${ImageUrl}</image>
+    </screenshot>
+  </screenshots>
+  <project_group>${Project}</project_group>
+  <provides>
+    <binary>${AppName}</binary>
+  </provides>
+  <releases>
+    <release version="${Version}" date="${VersionDate}"/>
+  </releases>
+  <content_rating type="oars-1.0" />
+</component>
+
+EOF
+
+read -n1 -r -p "Press space to continue..." key
+
+FolderSize=$(expr $(du -bs | cut -d'.' -f1) / 1024 + 1)
+
+cat << EOF > DEBIAN/control
+Package: ${AppName}
+Version: ${Version}
+Installed-Size: ${FolderSize}
+Maintainer: ${GithubId} <${Email}>
+Section: utils
+Architecture: all
+Priority: optional
+Depends: ${Depends}
+Homepage: ${Homepage}
+Description: ${CommentBr}
+ ${DescriptionBr}
+ .
+ $Description
+
+EOF
+
+if [ "$key" = '' ]; then
+    dpkg-deb -b . ..
+else
+    echo "Not compiled!"
+fi
+
+# convert usr/share/$AppName/$AppName.png usr/share/pixmaps/$AppName.xpm
