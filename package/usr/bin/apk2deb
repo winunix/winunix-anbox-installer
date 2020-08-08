@@ -103,10 +103,15 @@ anbox launch --package=$packageName --component=$launchableActivityName
 sleep 2
 widApp=\$(wmctrl -l | grep "$applicationLabel\$" | cut -d" " -f1)
 widAppBr=\$(wmctrl -l | grep "$applicationLabelBrASCII\$" | cut -d" " -f1)
-wmctrl -i -r \$widApp -b toggle,maximized_vert
-wmctrl -i -r \$widApp -b toggle,maximized_horz
-wmctrl -i -r \$widAppBr -b toggle,maximized_vert
-wmctrl -i -r \$widAppBr -b toggle,maximized_horz
+if [ "$widApp" == "$widAppBr" ]; then
+    wmctrl -i -r \$widApp -b toggle,maximized_vert
+    wmctrl -i -r \$widApp -b toggle,maximized_horz
+else
+    wmctrl -i -r \$widApp -b toggle,maximized_vert
+    wmctrl -i -r \$widApp -b toggle,maximized_horz
+    wmctrl -i -r \$widAppBr -b toggle,maximized_vert
+    wmctrl -i -r \$widAppBr -b toggle,maximized_horz
+fi
 EOF
 
 chmod +x $packageName
