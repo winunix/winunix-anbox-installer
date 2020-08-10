@@ -6,7 +6,7 @@ cd package
 # Project Folder
 mkdir -p usr/share/$AppName
 
-mkdir DEBIAN
+mkdir -p DEBIAN
 mkdir -p usr/bin/
 mkdir -p usr/share/applications/
 mkdir -p usr/share/metainfo/

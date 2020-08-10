@@ -14,7 +14,8 @@ else
 anbox session-manager &
 cp "$1" /tmp/
 cd /tmp/
-rm -rf /tmp/package
+sudo rm -rf /tmp/package/
+sudo rm -rf /tmp/config.data
 apk2deb "$1"
 deb-boilerplate
 sudo apt install "./$(cat package/DEBIAN/control | grep Package | cut -d' ' -f 2)_$(cat package/DEBIAN/control | grep Version | cut -d' ' -f 2)_$(cat package/DEBIAN/control | grep Architecture | cut -d' ' -f 2).deb"

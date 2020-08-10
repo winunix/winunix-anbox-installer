@@ -16,7 +16,7 @@ function package {
 
 function packageName {
     package "$1" | awk '{split($0,a,"name="); print a[2]}' |\
-    cut -d' ' -f1 | removeQuotation
+    cut -d' ' -f1 | sed 's/[_]//g' | removeQuotation
 }
 
 function packageVersionName {
@@ -73,6 +73,7 @@ applicationIcon160  "$1"
 
 
 cp "$1" "/tmp/$packageName.zip"
+rm -rf /tmp/$packageName
 unzip -oq /tmp/$packageName.zip -d /tmp/$packageName
 
 # Generate Icon
