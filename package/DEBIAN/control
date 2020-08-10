@@ -1,6 +1,6 @@
 Package: winunix-anbox-installer
-Version: 0.0.1
-Installed-Size: 
+Version: 0.0.2
+Installed-Size: 22
 Maintainer: ailtonbsj <ailton.ifce@gmail.com>
 Section: utils
 Architecture: all

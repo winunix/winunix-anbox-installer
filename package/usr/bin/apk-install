@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ "$1" == "" ]; then
+    cat << EOF
+USAGE:
+    apk-install yourpackage.apk
+
+DESCRIPTION:
+This tool create a file yourpackage.deb and install with APT automatically on anbox environment. To uninstall you can use some GUI package manager like Discover or Muon, or even apt purge.
+EOF
+
+else
+
+anbox session-manager &
+cp "$1" /tmp/
+cd /tmp/
+rm -rf /tmp/package
+apk2deb "$1"
+deb-boilerplate
+sudo apt install "./$(cat package/DEBIAN/control | grep Package | cut -d' ' -f 2)_$(cat package/DEBIAN/control | grep Version | cut -d' ' -f 2)_$(cat package/DEBIAN/control | grep Architecture | cut -d' ' -f 2).deb"
+
+fi

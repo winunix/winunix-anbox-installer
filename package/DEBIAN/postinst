@@ -22,3 +22,32 @@ sudo snap install --devmode --edge anbox
 sudo snap set anbox rootfs-overlay.enable=true
 sudo snap stop anbox.container-manager
 sudo snap start anbox.container-manager
+
+
+cat << EOF > /var/lib/snapd/desktop/applications/anbox_android-settings.desktop
+[Desktop Entry]
+X-SnapInstanceName=anbox
+Version=1.0
+Exec=env BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/anbox_android-settings.desktop /snap/bin/anbox.android-settings
+Terminal=false
+Type=Application
+Name=Android Settings
+GenericName=Android Settings
+Icon=/snap/anbox/194/meta/gui/icon.png
+Categories=Anbox;
+
+EOF
+
+cat << EOF > /var/lib/snapd/desktop/applications/anbox_appmgr.desktop
+[Desktop Entry]
+X-SnapInstanceName=anbox
+Name=Anbox Application Manager
+GenericName=Anbox Application Manager
+Version=1.0
+Type=Application
+Icon=/snap/anbox/194/meta/gui/icon.png
+Exec=env BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/anbox_appmgr.desktop /snap/bin/anbox.appmgr launch --package=org.anbox.appmgr --component=org.anbox.appmgr.AppViewActivity
+Terminal=false
+Categories=Anbox;
+
+EOF

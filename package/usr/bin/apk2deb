@@ -96,7 +96,10 @@ fi
 # Generate binary
 applicationLabelBrASCII=$(echo $applicationLabelBr | sed 's/[âêîôûãẽĩõũáéíóúāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ]//g')
 
-cat << EOF > $packageName
+mkdir -p package/usr/share/$packageName/
+mkdir -p package/DEBIAN/
+
+cat << EOF > package/usr/share/$packageName/$packageName
 #!/bin/bash
 
 anbox launch --package=$packageName --component=$launchableActivityName
@@ -114,11 +117,8 @@ else
 fi
 EOF
 
-chmod +x $packageName
-mkdir -p package/usr/share/$packageName/
-mkdir -p package/DEBIAN/
+chmod +x package/usr/share/$packageName/$packageName
 mv $packageName.png package/usr/share/$packageName/
-mv $packageName package/usr/share/$packageName/
 cp "$1" package/usr/share/$packageName/$packageName.apk
 
 cat << EOF > package/DEBIAN/postinst
@@ -153,7 +153,7 @@ Homepage=""
 Bugtracker=""
 Help=""
 Donation=""
-Categories="Education;"
+Categories="Anbox;"
 License="GPL-2.0+"
 Caption="Screenshot of app"
 CaptionBr="Tela do App"
