@@ -16,7 +16,7 @@ function package {
 
 function packageName {
     package "$1" | awk '{split($0,a,"name="); print a[2]}' |\
-    cut -d' ' -f1 | sed 's/[_]//g' | removeQuotation
+    cut -d' ' -f1 | removeQuotation
 }
 
 function packageVersionName {

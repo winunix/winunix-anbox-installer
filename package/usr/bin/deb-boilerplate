@@ -75,9 +75,10 @@ EOF
 read -n1 -r -p "Press space to continue..." key
 
 FolderSize=$(expr $(du -bs | cut -d'.' -f1) / 1024 + 1)
+AppNameFiltered=$(echo $AppName | sed 's/[_]//g')
 
 cat << EOF > DEBIAN/control
-Package: ${AppName}
+Package: ${AppNameFiltered}
 Version: ${Version}
 Installed-Size: ${FolderSize}
 Maintainer: ${GithubId} <${Email}>
