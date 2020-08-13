@@ -81,17 +81,23 @@ iconFilename=$(basename -- "$applicationIcon")
 iconExtension="${iconFilename##*.}"
 iconName="${iconFilename%.*}"
 
+if [ -f $packageName.png ]; then rm $packageName.png; fi
+
 if [ "$iconExtension" == "png" ]; then
     convert /tmp/$packageName/$applicationIcon -resize 128x128 $packageName.png
 else
     find /tmp/$packageName -iname "$iconName.png" > /tmp/icons_of_apk
     while read line; do
         size=$(identify -format "%w" $line)
-        if [ "$size" -gt "128" ]; then
+        if [ "$size" -ge "128" ]; then
             convert $line -resize 128x128 $packageName.png
             break
         fi
     done < /tmp/icons_of_apk
+    if [ ! -f $packageName.png ]; then
+        line=$(head -n1 /tmp/icons_of_apk)
+        convert $line -resize 128x128 $packageName.png
+    fi
 fi
 
 # Generate binary
